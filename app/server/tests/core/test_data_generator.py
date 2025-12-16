@@ -1,7 +1,7 @@
 import pytest
 import sqlite3
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from core.data_generator import (
     sample_random_rows,
     get_table_schema,
@@ -10,7 +10,6 @@ from core.data_generator import (
     generate_table_data,
     analyze_patterns_and_generate_data
 )
-from core.data_models import DataGenerationResponse
 
 
 class TestDataGenerator:

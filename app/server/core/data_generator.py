@@ -1,11 +1,9 @@
 import sqlite3
-import random
 import json
 import logging
 from typing import List, Dict, Any, Tuple
-from core.llm_processor import generate_sql_with_openai, generate_sql_with_anthropic
 from core.sql_security import validate_identifier, execute_query_safely, SQLSecurityError
-from core.data_models import DataGenerationRequest, DataGenerationResponse
+from core.data_models import DataGenerationResponse
 from core.utils import parse_json
 import os
 
@@ -228,7 +226,7 @@ Rules:
             for key in ['data', 'rows', 'records', 'items', 'results']:
                 if key in obj and isinstance(obj[key], list):
                     return json.dumps(obj[key])
-        except:
+        except Exception:
             pass
     
     return content
@@ -271,8 +269,7 @@ def validate_generated_data(data: List[Dict[str, Any]], schema: Dict[str, Any]) 
         ValueError: If validation fails
     """
     validated_data = []
-    column_types = {col: info['type'] for col, info in schema['columns'].items()}
-    
+
     for i, row in enumerate(data):
         validated_row = {}
         

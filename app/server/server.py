@@ -26,7 +26,7 @@ from core.data_models import (
     DataGenerationResponse
 )
 from core.file_processor import convert_csv_to_sqlite, convert_json_to_sqlite, convert_jsonl_to_sqlite
-from core.llm_processor import generate_sql, generate_random_query, generate_code
+from core.llm_processor import generate_random_query, generate_code
 from core.sql_processor import execute_sql_safely, get_database_schema
 from core.insights import generate_insights
 from core.sql_security import (
