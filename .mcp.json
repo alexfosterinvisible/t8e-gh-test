@@ -6,7 +6,7 @@
         "@playwright/mcp@latest",
         "--isolated",
         "--config",
-        "./playwright-mcp-config.json"
+        "/Users/dev3/code4b/wf-kiss1/adw/tac-8/t8e/trees/980a0883/playwright-mcp-config.json"
       ]
     }
   }

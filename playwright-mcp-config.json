@@ -6,7 +6,7 @@
     },
     "contextOptions": {
       "recordVideo": {
-        "dir": "./videos",
+        "dir": "/Users/dev3/code4b/wf-kiss1/adw/tac-8/t8e/trees/980a0883/videos",
         "size": {
           "width": 1920,
           "height": 1080
