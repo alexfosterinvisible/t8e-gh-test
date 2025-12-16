@@ -46,6 +46,7 @@ $ARGUMENT
 ## Report
 
 Provide a concise summary of:
+
 - Root cause identified (e.g., missing element, timing issue, incorrect selector)
 - Specific fix applied
 - Confirmation that the E2E test now passes after your fix

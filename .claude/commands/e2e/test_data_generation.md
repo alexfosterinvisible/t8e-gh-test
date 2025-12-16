@@ -45,6 +45,7 @@ So that I can expand my test datasets with realistic data
     - Take a screenshot of the generated data
 
 ## Success Criteria
+
 - Generate Data button appears for each table
 - Button shows loading state during generation
 - Success message displays after generation
@@ -54,6 +55,7 @@ So that I can expand my test datasets with realistic data
 - 6 screenshots are taken
 
 ## Error Scenarios
+
 - If table is empty, should show appropriate error
 - If LLM fails, should show error message
 - Button should be re-enabled after error

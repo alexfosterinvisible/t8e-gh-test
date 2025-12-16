@@ -3,6 +3,7 @@
 This prompt helps you determine what documentation you should read based on the specific changes you need to make in the codebase. Review the conditions below and read the relevant documentation before proceeding with your task.
 
 ## Instructions
+
 - Review the task you've been asked to perform
 - Check each documentation path in the Conditional Documentation section
 - For each path, evaluate if any of the listed conditions apply to your task
@@ -61,3 +62,12 @@ This prompt helps you determine what documentation you should read based on the 
     - When working with upload button text or labeling
     - When implementing UI text changes for data upload functionality
     - When troubleshooting upload button display or terminology
+
+- app_docs/feature-6b5c2c81-nlp-to-abap-conversion.md
+  - Conditions:
+    - When working with ABAP code generation functionality
+    - When implementing or modifying output mode toggle (SQL/ABAP)
+    - When troubleshooting ABAP generation with OpenAI or Anthropic
+    - When working with schema translation from SQL to ABAP concepts
+    - When adding new LLM-based code generation features
+    - When modifying the query processing endpoint to support multiple output types

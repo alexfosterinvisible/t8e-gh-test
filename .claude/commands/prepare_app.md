@@ -22,6 +22,5 @@ PORT: If `.ports.env` exists, read FRONTEND_PORT from it, otherwise default to 5
 
 4. Verify the application is running:
    - The application should be accessible at http://localhost:PORT (where PORT is from `.ports.env` or default 5173)
-   
-Note: Read `scripts/` and `README.md` for more information on how to start, stop and reset the server and client.
 
+Note: Read `scripts/` and `README.md` for more information on how to start, stop and reset the server and client.

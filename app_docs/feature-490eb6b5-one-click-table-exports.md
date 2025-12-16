@@ -66,6 +66,7 @@ This feature enables users to export table data and query results as CSV files w
 ## Configuration
 
 No additional configuration required. The feature uses:
+
 - Existing pandas dependency for CSV generation
 - SQLite database connections from existing infrastructure
 - FastAPI Response class for file downloads
@@ -74,19 +75,24 @@ No additional configuration required. The feature uses:
 ## Testing
 
 ### Unit Tests
+
 Run server tests to validate export functionality:
+
 ```bash
 cd app/server && uv run pytest tests/test_export_utils.py -v
 ```
 
 ### E2E Tests
+
 Execute comprehensive export functionality tests:
+
 ```bash
 # Read and execute the E2E test file
 .claude/commands/e2e/test_export_functionality.md
 ```
 
 ### Manual Testing
+
 1. Upload a CSV file and verify exported table matches original data
 2. Execute queries with various data types and verify CSV export accuracy
 3. Test with empty tables and empty query results

@@ -13,8 +13,8 @@ import OpenAI from "openai";
 const client = new OpenAI();
 
 const response = await client.responses.create({
-    model: "gpt-4.1",
-    input: "Write a one-sentence bedtime story about a unicorn."
+  model: "gpt-4.1",
+  input: "Write a one-sentence bedtime story about a unicorn.",
 });
 
 console.log(response.output_text);
@@ -69,19 +69,20 @@ import OpenAI from "openai";
 const client = new OpenAI();
 
 const response = await client.responses.create({
-    model: "gpt-4.1",
-    input: [
-        { role: "user", content: "What two teams are playing in this photo?" },
+  model: "gpt-4.1",
+  input: [
+    { role: "user", content: "What two teams are playing in this photo?" },
+    {
+      role: "user",
+      content: [
         {
-            role: "user",
-            content: [
-                {
-                    type: "input_image",
-                    image_url: "https://upload.wikimedia.org/wikipedia/commons/3/3b/LeBron_James_Layup_%28Cleveland_vs_Brooklyn_2018%29.jpg",
-                }
-            ],
+          type: "input_image",
+          image_url:
+            "https://upload.wikimedia.org/wikipedia/commons/3/3b/LeBron_James_Layup_%28Cleveland_vs_Brooklyn_2018%29.jpg",
         },
-    ],
+      ],
+    },
+  ],
 });
 
 console.log(response.output_text);
@@ -151,9 +152,9 @@ import OpenAI from "openai";
 const client = new OpenAI();
 
 const response = await client.responses.create({
-    model: "gpt-4.1",
-    tools: [ { type: "web_search_preview" } ],
-    input: "What was a positive news story from today?",
+  model: "gpt-4.1",
+  tools: [{ type: "web_search_preview" }],
+  input: "What was a positive news story from today?",
 });
 
 console.log(response.output_text);
@@ -200,18 +201,18 @@ import { OpenAI } from "openai";
 const client = new OpenAI();
 
 const stream = await client.responses.create({
-    model: "gpt-4.1",
-    input: [
-        {
-            role: "user",
-            content: "Say 'double bubble bath' ten times fast.",
-        },
-    ],
-    stream: true,
+  model: "gpt-4.1",
+  input: [
+    {
+      role: "user",
+      content: "Say 'double bubble bath' ten times fast.",
+    },
+  ],
+  stream: true,
 });
 
 for await (const event of stream) {
-    console.log(event);
+  console.log(event);
 }
 ```
 
@@ -245,26 +246,26 @@ Use the OpenAI platform to build [agents](https://platform.openai.com/docs/guide
 #### JavaScript
 
 ```javascript
-import { Agent, run } from '@openai/agents';
+import { Agent, run } from "@openai/agents";
 
 const spanishAgent = new Agent({
-  name: 'Spanish agent',
-  instructions: 'You only speak Spanish.',
+  name: "Spanish agent",
+  instructions: "You only speak Spanish.",
 });
 
 const englishAgent = new Agent({
-  name: 'English agent',
-  instructions: 'You only speak English',
+  name: "English agent",
+  instructions: "You only speak English",
 });
 
 const triageAgent = new Agent({
-  name: 'Triage agent',
+  name: "Triage agent",
   instructions:
-    'Handoff to the appropriate agent based on the language of the request.',
+    "Handoff to the appropriate agent based on the language of the request.",
   handoffs: [spanishAgent, englishAgent],
 });
 
-const result = await run(triageAgent, 'Hola, ¿cómo estás?');
+const result = await run(triageAgent, "Hola, ¿cómo estás?");
 console.log(result.finalOutput);
 ```
 
