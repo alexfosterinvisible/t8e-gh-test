@@ -1,0 +1,122 @@
+{
+  "nodes": [
+    {
+      "id": "core.llm_processor",
+      "label": "llm_processor",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.data_generator",
+      "label": "data_generator",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.export_utils",
+      "label": "export_utils",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.constants",
+      "label": "constants",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.insights",
+      "label": "insights",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.sql_security",
+      "label": "sql_security",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.utils",
+      "label": "utils",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.sql_processor",
+      "label": "sql_processor",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core",
+      "label": "core",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.data_models",
+      "label": "data_models",
+      "type": "module",
+      "group": "core"
+    },
+    {
+      "id": "core.file_processor",
+      "label": "file_processor",
+      "type": "module",
+      "group": "core"
+    }
+  ],
+  "edges": [
+    {
+      "source": "core.llm_processor",
+      "target": "core.data_models",
+      "type": "imports"
+    },
+    {
+      "source": "core.data_generator",
+      "target": "core.utils",
+      "type": "imports"
+    },
+    {
+      "source": "core.data_generator",
+      "target": "core.llm_processor",
+      "type": "imports"
+    },
+    {
+      "source": "core.data_generator",
+      "target": "core.data_models",
+      "type": "imports"
+    },
+    {
+      "source": "core.data_generator",
+      "target": "core.sql_security",
+      "type": "imports"
+    },
+    {
+      "source": "core.insights",
+      "target": "core.data_models",
+      "type": "imports"
+    },
+    {
+      "source": "core.insights",
+      "target": "core.sql_security",
+      "type": "imports"
+    },
+    {
+      "source": "core.sql_processor",
+      "target": "core.sql_security",
+      "type": "imports"
+    },
+    {
+      "source": "core.file_processor",
+      "target": "core.constants",
+      "type": "imports"
+    },
+    {
+      "source": "core.file_processor",
+      "target": "core.sql_security",
+      "type": "imports"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "source": "core.llm_processor",
+    "target": "core.data_models",
+    "type": "imports"
+  },
+  {
+    "source": "core.data_generator",
+    "target": "core.utils",
+    "type": "imports"
+  },
+  {
+    "source": "core.data_generator",
+    "target": "core.llm_processor",
+    "type": "imports"
+  },
+  {
+    "source": "core.data_generator",
+    "target": "core.data_models",
+    "type": "imports"
+  },
+  {
+    "source": "core.data_generator",
+    "target": "core.sql_security",
+    "type": "imports"
+  },
+  {
+    "source": "core.insights",
+    "target": "core.data_models",
+    "type": "imports"
+  },
+  {
+    "source": "core.insights",
+    "target": "core.sql_security",
+    "type": "imports"
+  },
+  {
+    "source": "core.sql_processor",
+    "target": "core.sql_security",
+    "type": "imports"
+  },
+  {
+    "source": "core.file_processor",
+    "target": "core.constants",
+    "type": "imports"
+  },
+  {
+    "source": "core.file_processor",
+    "target": "core.sql_security",
+    "type": "imports"
+  }
+]
