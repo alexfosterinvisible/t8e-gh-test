@@ -10,11 +10,17 @@
     <div id="app">
       <div class="container">
         <h1>Natural Language SQL Interface</h1>
-        
+
         <!-- Query Input Section -->
         <section id="query-section" class="query-section">
-          <textarea 
-            id="query-input" 
+          <!-- Output Mode Toggle -->
+          <div class="output-mode-toggle">
+            <button id="sql-mode-button" class="mode-button active">SQL</button>
+            <button id="abap-mode-button" class="mode-button">ABAP</button>
+          </div>
+
+          <textarea
+            id="query-input"
             placeholder="Ask a question about your data... (e.g., 'Show me users who signed up last week')"
             rows="4"
             autofocus
@@ -22,14 +28,22 @@
           <div class="query-controls">
             <div class="query-controls-left">
               <button id="query-button" class="primary-button">Query</button>
-              <button id="upload-data-button" class="secondary-button">Upload</button>
+              <button id="upload-data-button" class="secondary-button">
+                Upload
+              </button>
             </div>
-            <button id="generate-random-query-button" class="secondary-button">Generate Random Query</button>
+            <button id="generate-random-query-button" class="secondary-button">
+              Generate Random Query
+            </button>
           </div>
         </section>
 
         <!-- Results Section -->
-        <section id="results-section" class="results-section" style="display: none;">
+        <section
+          id="results-section"
+          class="results-section"
+          style="display: none"
+        >
           <div class="results-header">
             <h2>Query Results</h2>
             <button id="toggle-results" class="toggle-button">Hide</button>
@@ -42,18 +56,20 @@
         <section id="tables-section" class="tables-section">
           <h3>Available Tables</h3>
           <div id="tables-list" class="tables-list">
-            <p class="no-tables">No tables loaded. Upload data or use sample data to get started.</p>
+            <p class="no-tables">
+              No tables loaded. Upload data or use sample data to get started.
+            </p>
           </div>
         </section>
 
         <!-- Upload Modal -->
-        <div id="upload-modal" class="modal" style="display: none;">
+        <div id="upload-modal" class="modal" style="display: none">
           <div class="modal-content">
             <div class="modal-header">
               <h2>Upload Data</h2>
               <button class="close-modal">&times;</button>
             </div>
-            
+
             <div class="modal-body">
               <!-- Sample Data Section -->
               <div class="sample-data-section">
@@ -88,8 +104,15 @@
               <!-- File Upload Section -->
               <div id="drop-zone" class="drop-zone">
                 <p>Drag and drop .csv, .json, or .jsonl files here</p>
-                <input type="file" id="file-input" accept=".csv,.json,.jsonl" style="display: none;">
-                <button id="browse-button" class="secondary-button">Browse Files</button>
+                <input
+                  type="file"
+                  id="file-input"
+                  accept=".csv,.json,.jsonl"
+                  style="display: none"
+                />
+                <button id="browse-button" class="secondary-button">
+                  Browse Files
+                </button>
               </div>
             </div>
           </div>

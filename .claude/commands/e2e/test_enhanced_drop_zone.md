@@ -55,6 +55,7 @@ So that I can quickly upload data without having to open the upload modal first
 29. Take a screenshot of the error message
 
 ## Success Criteria
+
 - Drop overlays appear when dragging files over query and tables sections
 - Drop overlays display "Drop to create table" messaging
 - Files can be successfully dropped and uploaded from both areas

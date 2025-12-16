@@ -5,6 +5,7 @@ A web application that converts natural language queries to SQL using AI, built 
 ## Features
 
 - 🗣️ Natural language to SQL conversion using OpenAI or Anthropic
+- 🔧 ABAP SAP code generation for SAP system development
 - 📁 Drag-and-drop file upload (.csv and .json)
 - 📊 Interactive table results display
 - 🔒 SQL injection protection
@@ -53,6 +54,7 @@ Use the provided script to start both services:
 Press `Ctrl+C` to stop both services.
 
 The script will:
+
 - Check that `.env` exists in `app/server/`
 - Start the backend on http://localhost:8000
 - Start the frontend on http://localhost:5173
@@ -61,6 +63,7 @@ The script will:
 ## Manual Start (Alternative)
 
 ### Backend
+
 ```bash
 cd app/server
 # .env is loaded automatically by python-dotenv
@@ -68,6 +71,7 @@ uv run python server.py
 ```
 
 ### Frontend
+
 ```bash
 cd app/client
 bun run dev
@@ -79,14 +83,23 @@ bun run dev
    - Use sample data buttons for quick testing
    - Or drag and drop your own .csv or .json files
    - Uploading a file with the same name will overwrite the existing table
-2. **Query Your Data**: Type a natural language query like "Show me all users who signed up last week"
+2. **Select Output Mode**: Toggle between SQL and ABAP modes
+   - **SQL mode**: Generates and executes SQL queries against your uploaded data
+   - **ABAP mode**: Generates ABAP code for SAP systems (informational only, no execution)
+3. **Query Your Data**: Type a natural language query like "Show me all users who signed up last week"
    - Press `Cmd+Enter` (Mac) or `Ctrl+Enter` (Windows/Linux) to run the query
-3. **View Results**: See the generated SQL and results in a table format
-4. **Manage Tables**: Click the × button on any table to remove it
+4. **View Results**: See the generated SQL/ABAP code and results (SQL mode only)
+5. **Manage Tables**: Click the × button on any table to remove it
+
+## Output Modes
+
+- **SQL Mode** (default): Generates SQL queries and executes them against your uploaded data, displaying results in a table format
+- **ABAP Mode**: Generates ABAP code suitable for SAP systems. The code is displayed for reference but not executed (ABAP execution requires SAP system connectivity which is out of scope)
 
 ## Development
 
 ### Backend Commands
+
 ```bash
 cd app/server
 uv run python server.py      # Start server with hot reload
@@ -97,6 +110,7 @@ uv sync --all-extras        # Sync all extras
 ```
 
 ### Frontend Commands
+
 ```bash
 cd app/client
 bun run dev                 # Start dev server
@@ -124,6 +138,11 @@ bun run preview            # Preview production build
 
 - `POST /api/upload` - Upload CSV/JSON file
 - `POST /api/query` - Process natural language query
+  - **Parameters**:
+    - `query` (string): Natural language query
+    - `llm_provider` (string): "openai" or "anthropic"
+    - `output_mode` (string, optional): "sql" or "abap" (defaults to "sql")
+  - **Response**: Generated code and execution results (SQL mode) or code only (ABAP mode)
 - `GET /api/schema` - Get database schema
 - `POST /api/insights` - Generate column insights
 - `GET /api/health` - Health check
@@ -161,6 +180,7 @@ The application implements comprehensive SQL injection protection through multip
 ### Security Best Practices for Development
 
 When adding new SQL functionality:
+
 1. Always use the `sql_security` module functions
 2. Never concatenate user input directly into SQL strings
 3. Use `execute_query_safely()` for all database operations
@@ -170,11 +190,11 @@ When adding new SQL functionality:
 ### Testing Security
 
 Run the comprehensive security tests:
+
 ```bash
 cd app/server
 uv run pytest tests/test_sql_injection.py -v
 ```
-
 
 ### Additional Security Features
 
@@ -212,21 +232,27 @@ export GITHUB_PAT="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # Optional, only i
 ADW supports three main operation modes:
 
 #### 1. Manual Processing
+
 Process a single GitHub issue manually (in isolated worktree):
+
 ```bash
 cd adws/
 uv run adw_plan_build_iso.py <issue-number>
 ```
 
 #### 2. Automated Monitoring
+
 Continuously monitor GitHub for new issues (polls every 20 seconds):
+
 ```bash
 cd adws/
 uv run trigger_cron.py
 ```
 
 #### 3. Webhook Server
+
 Start a webhook server for real-time GitHub event processing:
+
 ```bash
 cd adws/
 uv run trigger_webhook.py
@@ -246,13 +272,16 @@ For detailed technical documentation, configuration options, and troubleshooting
 ## Troubleshooting
 
 **Backend won't start:**
+
 - Check Python version: `python --version` (requires 3.12+)
 - Verify API keys are set: `echo $OPENAI_API_KEY`
 
 **Frontend errors:**
+
 - Clear node_modules: `rm -rf node_modules && bun install`
 - Check Node version: `node --version` (requires 18+)
 
 **CORS issues:**
+
 - Ensure backend is running on port 8000
 - Check vite.config.ts proxy settings

@@ -26,7 +26,7 @@ from core.data_models import (
     DataGenerationResponse
 )
 from core.file_processor import convert_csv_to_sqlite, convert_json_to_sqlite, convert_jsonl_to_sqlite
-from core.llm_processor import generate_sql, generate_random_query
+from core.llm_processor import generate_sql, generate_random_query, generate_code
 from core.sql_processor import execute_sql_safely, get_database_schema
 from core.insights import generate_insights
 from core.sql_security import (
@@ -121,31 +121,57 @@ async def upload_file(file: UploadFile = File(...)) -> FileUploadResponse:
 
 @app.post("/api/query", response_model=QueryResponse)
 async def process_natural_language_query(request: QueryRequest) -> QueryResponse:
-    """Process natural language query and return SQL results"""
+    """
+    (Claude)
+    Process natural language query and return SQL or ABAP results based on output_mode
+    """
     try:
         # Get database schema
         schema_info = get_database_schema()
-        
-        # Generate SQL using routing logic
-        sql = generate_sql(request, schema_info)
-        
-        # Execute SQL query
-        start_time = datetime.now()
-        result = execute_sql_safely(sql)
-        execution_time = (datetime.now() - start_time).total_seconds() * 1000
-        
-        if result['error']:
-            raise Exception(result['error'])
-        
-        response = QueryResponse(
-            sql=sql,
-            results=result['results'],
-            columns=result['columns'],
-            row_count=len(result['results']),
-            execution_time_ms=execution_time
-        )
-        logger.info(f"[SUCCESS] Query processed: SQL={sql}, rows={len(result['results'])}, time={execution_time}ms")
-        return response
+
+        # Validate output_mode
+        if request.output_mode not in ["sql", "abap"]:
+            raise HTTPException(400, f"Invalid output_mode: {request.output_mode}. Must be 'sql' or 'abap'")
+
+        # Generate code using routing logic (SQL or ABAP based on output_mode)
+        code = generate_code(request, schema_info)
+
+        # Handle based on output mode
+        if request.output_mode == "abap":
+            # ABAP mode - no execution, return code only
+            response = QueryResponse(
+                sql=code,  # Backward compatibility field
+                code=code,
+                output_mode="abap",
+                results=[],
+                columns=[],
+                row_count=0,
+                execution_time_ms=0
+            )
+            logger.info(f"[SUCCESS] ABAP code generated: {len(code)} characters")
+            return response
+        else:
+            # SQL mode - execute the query
+            start_time = datetime.now()
+            result = execute_sql_safely(code)
+            execution_time = (datetime.now() - start_time).total_seconds() * 1000
+
+            if result['error']:
+                raise Exception(result['error'])
+
+            response = QueryResponse(
+                sql=code,  # Backward compatibility field
+                code=code,
+                output_mode="sql",
+                results=result['results'],
+                columns=result['columns'],
+                row_count=len(result['results']),
+                execution_time_ms=execution_time
+            )
+            logger.info(f"[SUCCESS] SQL query processed: SQL={code}, rows={len(result['results'])}, time={execution_time}ms")
+            return response
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[ERROR] Query processing failed: {str(e)}")
         logger.error(f"[ERROR] Full traceback:\n{traceback.format_exc()}")

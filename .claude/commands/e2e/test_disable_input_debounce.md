@@ -50,6 +50,7 @@ So that I don't accidentally type or submit multiple queries at once
     - **Verify** the input is re-enabled after completion
 
 ## Success Criteria
+
 - Query input is disabled during query execution
 - Query button is disabled during query execution
 - User cannot type in the textarea while a query is processing

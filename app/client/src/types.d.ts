@@ -14,10 +14,13 @@ export interface QueryRequest {
   query: string;
   llm_provider: "openai" | "anthropic";
   table_name?: string;
+  output_mode?: "sql" | "abap"; // (Claude) Output mode: SQL or ABAP
 }
 
 export interface QueryResponse {
-  sql: string;
+  sql: string; // Kept for backward compatibility
+  code?: string; // (Claude) Generic code field for SQL or ABAP
+  output_mode?: string; // (Claude) Echo back which mode was used
   results: Record<string, any>[];
   columns: string[];
   row_count: number;
@@ -97,19 +100,19 @@ export interface DataGenerationResponse {
 export interface AEAAgent {
   id: number;
   agent_id: string;
-  agent_name?: string;  // AI-generated name for the agent
+  agent_name?: string; // AI-generated name for the agent
   adw_id: string;
-  cc_session_id?: string;  // Claude Code session ID (set after first prompt)
+  cc_session_id?: string; // Claude Code session ID (set after first prompt)
   conversation: AEAMessage[];
   full_output?: string;
-  state: 'idle' | 'working' | 'errored' | 'archived';
+  state: "idle" | "working" | "errored" | "archived";
   created_at: string;
   updated_at: string;
   archived: boolean;
 }
 
 export interface AEAMessage {
-  who: 'user' | 'agent';
+  who: "user" | "agent";
   content: string;
   created: string;
 }

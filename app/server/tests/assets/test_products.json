@@ -16,7 +16,7 @@
   {
     "id": 3,
     "name": "Coffee Mug",
-    "price": 12.50,
+    "price": 12.5,
     "category": "Kitchen",
     "in_stock": false
   }

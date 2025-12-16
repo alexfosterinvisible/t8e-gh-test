@@ -12,7 +12,7 @@ say hi
 
 _**Agent (model claude-4.5-opus-high, mode Agent)**_
 
-Hi! 👋 
+Hi! 👋
 
 I'm ready to help you with your coding tasks. I see you're working in the `t8e` project which appears to be an agentic development workflow system with a client/server architecture for NLQ-to-SQL functionality.
 
@@ -123,18 +123,22 @@ Now I have the full picture. Here's the analysis:
 ## What Triggers `adw_sdlc_zte_iso.py`?
 
 ### 1. **Webhook Trigger** (`trigger_webhook.py`)
+
 The primary intended trigger. When a GitHub issue or comment contains `adw_sdlc_zte_iso` (or similar), the webhook:
+
 1. Receives the GitHub event at `/gh-webhook`
 2. Uses `extract_adw_info()` which calls the `adw_classifier` agent
 3. The classifier returns the workflow to run
 4. The webhook launches the script via subprocess
 
 ### 2. **Manual CLI Execution**
+
 ```bash
 uv run adw_sdlc_zte_iso.py <issue-number> [adw-id] [--skip-e2e] [--skip-resolution]
 ```
 
 ### 3. **Cron Trigger** (`trigger_cron.py`)
+
 Polls every 20 seconds for issues where the latest comment is exactly `"adw"` — but this triggers `adw_plan_build_iso.py`, **not** `adw_sdlc_zte_iso.py`.
 
 ---
@@ -144,16 +148,19 @@ Polls every 20 seconds for issues where the latest comment is exactly `"adw"` �
 ### The Problem: **Case Mismatch**
 
 In `workflow_ops.py` line 40:
+
 ```python
 "adw_sdlc_ZTE_iso",  # Zero Touch Execution workflow  ← uppercase ZTE
 ```
 
 But the actual filename is:
+
 ```
 adw_sdlc_zte_iso.py  ← lowercase zte
 ```
 
 ### What This Means:
+
 1. The webhook **cannot trigger** `adw_sdlc_zte_iso.py` because the classifier returns `"adw_sdlc_ZTE_iso"` (uppercase)
 2. When `trigger_webhook.py` builds the script path (line 202):
    ```python
@@ -162,7 +169,9 @@ adw_sdlc_zte_iso.py  ← lowercase zte
    It looks for `adw_sdlc_ZTE_iso.py` which **doesn't exist** (macOS is case-insensitive by default, but this could fail on case-sensitive filesystems)
 
 ### The Fix:
+
 Either:
+
 - **Option A:** Rename the file to `adw_sdlc_ZTE_iso.py` to match the constant
 - **Option B:** Change the constant to `"adw_sdlc_zte_iso"` (lowercase)
 
@@ -172,12 +181,12 @@ Either:
 
 ## Summary
 
-| Trigger | Can Trigger ZTE? | Status |
-|---------|-----------------|--------|
-| Webhook (issue/comment with `adw_sdlc_zte_iso`) | ❌ No | **Broken** (case mismatch) |
-| Manual CLI | ✅ Yes | Works |
-| Cron | ❌ No | Triggers different workflow |
-| AEA Server | ❌ No | Not connected |
+| Trigger                                         | Can Trigger ZTE? | Status                      |
+| ----------------------------------------------- | ---------------- | --------------------------- |
+| Webhook (issue/comment with `adw_sdlc_zte_iso`) | ❌ No            | **Broken** (case mismatch)  |
+| Manual CLI                                      | ✅ Yes           | Works                       |
+| Cron                                            | ❌ No            | Triggers different workflow |
+| AEA Server                                      | ❌ No            | Not connected               |
 
 **Bottom line:** The ZTE workflow is currently **only runnable manually** due to the case mismatch bug in `AVAILABLE_ADW_WORKFLOWS`.
 
@@ -186,9 +195,12 @@ Either:
 _**User (2025-12-16 03:06Z)**_
 
 Fix:
+
 # workflow_ops.py line 40
-"adw_sdlc_zte_iso",  # Zero Touch Execution workflow
-# workflow_ops.py line 40"adw_sdlc_zte_iso",  # Zero Touch Execution workflow
+
+"adw_sdlc_zte_iso", # Zero Touch Execution workflow
+
+# workflow_ops.py line 40"adw_sdlc_zte_iso", # Zero Touch Execution workflow
 
 ---
 
@@ -236,6 +248,7 @@ This repo has **4 ways** to trigger workflows:
 ---
 
 ### 1. **Webhook Trigger** (`adws/adw_triggers/trigger_webhook.py`)
+
 **Primary production trigger** — listens for GitHub events.
 
 ```bash
@@ -244,6 +257,7 @@ uv run adws/adw_triggers/trigger_webhook.py
 ```
 
 **How it works:**
+
 - Runs FastAPI server on port `8001` (configurable via `PORT` env var)
 - Exposes `/gh-webhook` endpoint for GitHub webhooks
 - Triggers when:
@@ -251,21 +265,25 @@ uv run adws/adw_triggers/trigger_webhook.py
   - **Comment created** with `adw_` in the body
 
 **Example GitHub comment to trigger ZTE:**
+
 ```
 adw_sdlc_zte_iso
 ```
 
 **Workflow selection:** Uses `adw_classifier` agent to parse the text and extract:
+
 - Which workflow to run (e.g., `adw_sdlc_zte_iso`)
 - Optional ADW ID (for continuing existing workflows)
 - Model set (`base`, `pro`, etc.)
 
 **Dependent workflows** (require existing ADW ID):
+
 - `adw_build_iso`, `adw_test_iso`, `adw_review_iso`, `adw_document_iso`, `adw_ship_iso`
 
 ---
 
 ### 2. **Cron/Polling Trigger** (`adws/adw_triggers/trigger_cron.py`)
+
 **Automated polling** — checks GitHub every 20 seconds.
 
 ```bash
@@ -273,6 +291,7 @@ uv run adws/adw_triggers/trigger_cron.py
 ```
 
 **Triggers when:**
+
 - New issue with **no comments**
 - Issue where latest comment is exactly `"adw"`
 
@@ -281,6 +300,7 @@ uv run adws/adw_triggers/trigger_cron.py
 ---
 
 ### 3. **AEA Server** (`adws/adw_triggers/adw_trigger_aea_server.py`)
+
 **Agent Embedded Application** — interactive agent sessions via API.
 
 ```bash
@@ -288,6 +308,7 @@ uv run adws/adw_triggers/adw_trigger_aea_server.py
 ```
 
 **How it works:**
+
 - FastAPI server on port `8743`
 - Creates agent sessions with persistent conversation history
 - Stores sessions in SQLite (`adw_data/aea_agents.db`)
@@ -298,6 +319,7 @@ uv run adws/adw_triggers/adw_trigger_aea_server.py
 ---
 
 ### 4. **Manual CLI Execution**
+
 **Direct script invocation** — most flexible.
 
 ```bash
@@ -322,28 +344,29 @@ uv run adws/adw_sdlc_iso.py <issue-number> [adw-id]  # Full SDLC without auto-sh
 
 ## Available Workflows
 
-| Workflow | Description | Requires ADW ID? |
-|----------|-------------|------------------|
-| `adw_plan_iso` | Planning phase only | No |
-| `adw_patch_iso` | Quick patch workflow | No |
-| `adw_build_iso` | Implementation phase | **Yes** |
-| `adw_test_iso` | Testing phase | **Yes** |
-| `adw_review_iso` | Code review phase | **Yes** |
-| `adw_document_iso` | Documentation phase | **Yes** |
-| `adw_ship_iso` | Approve & merge PR | **Yes** |
-| `adw_plan_build_iso` | Plan → Build | No |
-| `adw_plan_build_test_iso` | Plan → Build → Test | No |
-| `adw_plan_build_test_review_iso` | Plan → Build → Test → Review | No |
-| `adw_plan_build_document_iso` | Plan → Build → Document | No |
-| `adw_plan_build_review_iso` | Plan → Build → Review | No |
-| `adw_sdlc_iso` | Full SDLC (no auto-ship) | No |
-| `adw_sdlc_zte_iso` | **Zero Touch Execution** — full SDLC + auto-ship | No |
+| Workflow                         | Description                                      | Requires ADW ID? |
+| -------------------------------- | ------------------------------------------------ | ---------------- |
+| `adw_plan_iso`                   | Planning phase only                              | No               |
+| `adw_patch_iso`                  | Quick patch workflow                             | No               |
+| `adw_build_iso`                  | Implementation phase                             | **Yes**          |
+| `adw_test_iso`                   | Testing phase                                    | **Yes**          |
+| `adw_review_iso`                 | Code review phase                                | **Yes**          |
+| `adw_document_iso`               | Documentation phase                              | **Yes**          |
+| `adw_ship_iso`                   | Approve & merge PR                               | **Yes**          |
+| `adw_plan_build_iso`             | Plan → Build                                     | No               |
+| `adw_plan_build_test_iso`        | Plan → Build → Test                              | No               |
+| `adw_plan_build_test_review_iso` | Plan → Build → Test → Review                     | No               |
+| `adw_plan_build_document_iso`    | Plan → Build → Document                          | No               |
+| `adw_plan_build_review_iso`      | Plan → Build → Review                            | No               |
+| `adw_sdlc_iso`                   | Full SDLC (no auto-ship)                         | No               |
+| `adw_sdlc_zte_iso`               | **Zero Touch Execution** — full SDLC + auto-ship | No               |
 
 ---
 
 ## Quick Start
 
 **Option A: Webhook (production)**
+
 ```bash
 # Terminal 1: Start webhook
 uv run adws/adw_triggers/trigger_webhook.py
@@ -355,6 +378,7 @@ ngrok http 8001
 ```
 
 **Option B: Manual (development)**
+
 ```bash
 # Run full ZTE on issue #42
 uv run adws/adw_sdlc_zte_iso.py 42
@@ -384,93 +408,93 @@ Lines added: 280, lines removed: 1
 
 ```diff
 @@ -1,1 +1,280 @@
-- 
+-
 + # ADW (AI Developer Workflow) — Triggers &amp; Execution Guide
-+ 
++
 + ## Overview
-+ 
++
 + ADW automates the software development lifecycle using AI agents. It can plan, build, test, review, document, and ship code changes triggered by GitHub issues.
-+ 
++
 + ---
-+ 
++
 + ## 4 Ways to Trigger Workflows
-+ 
++
 + ### 1. **Webhook Trigger** (&#96;adws/adw_triggers/trigger_webhook.py&#96;)
-+ 
++
 + **Primary production trigger** — listens for GitHub events in real-time.
-+ 
++
 + &#96;&#96;&#96;bash
 + # Start the webhook server
 + uv run adws/adw_triggers/trigger_webhook.py
 + &#96;&#96;&#96;
-+ 
++
 + **How it works:**
 + - Runs FastAPI server on port &#96;8001&#96; (configurable via &#96;PORT&#96; env var)
 + - Exposes &#96;/gh-webhook&#96; endpoint for GitHub webhooks
 + - Triggers when:
 +   - **New issue opened** with &#96;adw_&#96; in the body
 +   - **Comment created** with &#96;adw_&#96; in the body
-+ 
++
 + **Example GitHub comment to trigger ZTE:**
 + &#96;&#96;&#96;
 + adw_sdlc_zte_iso
 + &#96;&#96;&#96;
-+ 
++
 + **Workflow selection:** Uses &#96;adw_classifier&#96; agent to parse the text and extract:
 + - Which workflow to run (e.g., &#96;adw_sdlc_zte_iso&#96;)
 + - Optional ADW ID (for continuing existing workflows)
 + - Model set (&#96;base&#96;, &#96;pro&#96;, etc.)
-+ 
++
 + **Dependent workflows** (require existing ADW ID):
 + - &#96;adw_build_iso&#96;, &#96;adw_test_iso&#96;, &#96;adw_review_iso&#96;, &#96;adw_document_iso&#96;, &#96;adw_ship_iso&#96;
-+ 
++
 + | Pros | Cons |
 + |------|------|
 + | ✅ Fully automated — no manual intervention | ❌ Requires webhook infrastructure (ngrok/server) |
 + | ✅ Integrates naturally with GitHub workflow | ❌ 10-second GitHub timeout (handled via background jobs) |
 + | ✅ Team members can trigger via comments | ❌ Debugging harder — logs in &#96;agents/{adw_id}/&#96; |
 + | ✅ Audit trail in GitHub issues | |
-+ 
++
 + ---
-+ 
++
 + ### 2. **Cron/Polling Trigger** (&#96;adws/adw_triggers/trigger_cron.py&#96;)
-+ 
++
 + **Automated polling** — checks GitHub every 20 seconds without needing webhook infrastructure.
-+ 
++
 + &#96;&#96;&#96;bash
 + uv run adws/adw_triggers/trigger_cron.py
 + &#96;&#96;&#96;
-+ 
++
 + **Triggers when:**
 + - New issue with **no comments** yet
 + - Issue where latest comment is exactly &#96;"adw"&#96;
-+ 
++
 + **Always runs:** &#96;adw_plan_build_iso.py&#96; (hardcoded, not configurable)
-+ 
++
 + | Pros | Cons |
 + |------|------|
 + | ✅ No webhook setup required | ❌ Only triggers &#96;adw_plan_build_iso&#96; |
 + | ✅ Works behind firewalls | ❌ 20-second polling delay |
 + | ✅ Simple to run | ❌ Less flexible than webhook |
 + | | ❌ Consumes GitHub API quota |
-+ 
++
 + ---
-+ 
++
 + ### 3. **AEA Server** (&#96;adws/adw_triggers/adw_trigger_aea_server.py&#96;)
-+ 
++
 + **Agent Embedded Application** — interactive agent sessions via REST API with persistent conversation history.
-+ 
++
 + &#96;&#96;&#96;bash
 + uv run adws/adw_triggers/adw_trigger_aea_server.py
 + &#96;&#96;&#96;
-+ 
++
 + **How it works:**
 + - FastAPI server on port &#96;8743&#96;
 + - Creates agent sessions with unique IDs (e.g., &#96;aea_123abc456def&#96;)
 + - Stores sessions in SQLite (&#96;adw_data/aea_agents.db&#96;)
 + - Frontend connects via &#96;/aea/*&#96; endpoints
 + - Each agent gets a creative name generated by Claude Haiku
-+ 
++
 + **Key Endpoints:**
 + | Endpoint | Purpose |
 + |----------|---------|
@@ -479,14 +503,14 @@ Lines added: 280, lines removed: 1
 + | &#96;GET /aea/poll_agent_by_id&#96; | Poll for agent response |
 + | &#96;GET /aea/get_agent_ids&#96; | List active agents |
 + | &#96;POST /aea/end_agent&#96; | Archive agent session |
-+ 
++
 + **Session Continuity:**
 + - First prompt creates a new Claude Code session
 + - Subsequent prompts use &#96;--resume&#96; with the stored &#96;cc_session_id&#96;
 + - Conversation history persists across browser refreshes
-+ 
++
 + #### AEA Server vs Claude Code CLI
-+ 
++
 + | Aspect | AEA Server | Claude Code CLI |
 + |--------|------------|-----------------|
 + | **Interface** | REST API / Web UI | Terminal |
@@ -496,7 +520,7 @@ Lines added: 280, lines removed: 1
 + | **Integration** | Embeddable in apps | Standalone tool |
 + | **Overhead** | Server process required | None |
 + | **Use case** | Web apps, dashboards, team tools | Personal dev work |
-+ 
++
 + | Pros | Cons |
 + |------|------|
 + | ✅ Persistent sessions across refreshes | ❌ Requires running server |
@@ -504,46 +528,46 @@ Lines added: 280, lines removed: 1
 + | ✅ Web UI integration | ❌ Not for batch SDLC workflows |
 + | ✅ Conversation history in DB | ❌ Additional latency vs direct CLI |
 + | ✅ Creative agent names 🎨 | |
-+ 
++
 + ---
-+ 
++
 + ### 4. **Manual CLI Execution**
-+ 
++
 + **Direct script invocation** — most flexible, best for development and debugging.
-+ 
++
 + &#96;&#96;&#96;bash
 + # Full SDLC with auto-ship (ZTE)
 + uv run adws/adw_sdlc_zte_iso.py &lt;issue-number&gt; [adw-id] [--skip-e2e] [--skip-resolution]
 + &#96;&#96;&#96;
-+ 
++
 + #### Understanding &#96;&lt;issue-number&gt;&#96; and &#96;[adw-id]&#96;
-+ 
++
 + **&#96;&lt;issue-number&gt;&#96;** (required):
 + - The GitHub issue number that defines the work to be done
 + - Example: For &#96;https://github.com/org/repo/issues/42&#96;, use &#96;42&#96;
 + - The issue title and body become the spec for the AI agents
-+ 
++
 + **&#96;[adw-id]&#96;** (optional):
 + - Unique identifier for a workflow run (e.g., &#96;adw-a1b2c3d4&#96;)
 + - **If omitted:** A new ADW ID is auto-generated and a fresh workflow starts
 + - **If provided:** Continues an existing workflow (uses existing worktree, branch, state)
 + - State is stored in &#96;agents/{adw-id}/adw_state.json&#96;
-+ 
++
 + **When to provide ADW ID:**
 + &#96;&#96;&#96;bash
 + # Start fresh workflow on issue 42
 + uv run adws/adw_plan_iso.py 42
 + # Output: "Using ADW ID: adw-a1b2c3d4"
-+ 
++
 + # Continue with build phase using the same ADW ID
 + uv run adws/adw_build_iso.py 42 adw-a1b2c3d4
-+ 
++
 + # Or run dependent phases that REQUIRE the ADW ID
 + uv run adws/adw_test_iso.py 42 adw-a1b2c3d4
 + &#96;&#96;&#96;
-+ 
++
 + #### Individual Phases
-+ 
++
 + &#96;&#96;&#96;bash
 + uv run adws/adw_plan_iso.py &lt;issue-number&gt; [adw-id]
 + uv run adws/adw_build_iso.py &lt;issue-number&gt; &lt;adw-id&gt;      # Requires ADW ID
@@ -552,9 +576,9 @@ Lines added: 280, lines removed: 1
 + uv run adws/adw_document_iso.py &lt;issue-number&gt; &lt;adw-id&gt;
 + uv run adws/adw_ship_iso.py &lt;issue-number&gt; &lt;adw-id&gt;
 + &#96;&#96;&#96;
-+ 
++
 + #### Composite Workflows
-+ 
++
 + &#96;&#96;&#96;bash
 + uv run adws/adw_plan_build_iso.py &lt;issue-number&gt; [adw-id]
 + uv run adws/adw_plan_build_test_iso.py &lt;issue-number&gt; [adw-id]
@@ -564,7 +588,7 @@ Lines added: 280, lines removed: 1
 + uv run adws/adw_sdlc_iso.py &lt;issue-number&gt; [adw-id]       # Full SDLC, no auto-ship
 + uv run adws/adw_sdlc_zte_iso.py &lt;issue-number&gt; [adw-id]   # Full SDLC + auto-ship
 + &#96;&#96;&#96;
-+ 
++
 + | Pros | Cons |
 + |------|------|
 + | ✅ Full control over execution | ❌ Manual invocation required |
@@ -572,11 +596,11 @@ Lines added: 280, lines removed: 1
 + | ✅ Can run any workflow | ❌ Must track ADW IDs manually |
 + | ✅ No infrastructure needed | |
 + | ✅ Best for development | |
-+ 
++
 + ---
-+ 
++
 + ## Available Workflows
-+ 
++
 + | Workflow | Description | Requires ADW ID |
 + |----------|-------------|:---------------:|
 + | &#96;adw_plan_iso&#96; | Planning phase only | ❌ |
@@ -593,11 +617,11 @@ Lines added: 280, lines removed: 1
 + | &#96;adw_plan_build_review_iso&#96; | Plan → Build → Review | ❌ |
 + | &#96;adw_sdlc_iso&#96; | Full SDLC (no auto-ship) | ❌ |
 + | &#96;adw_sdlc_zte_iso&#96; | **Zero Touch Execution** — full SDLC + auto-ship 🚀 | ❌ |
-+ 
++
 + ---
-+ 
++
 + ## Comparison Matrix
-+ 
++
 + | Aspect | Webhook | Cron | AEA Server | Manual CLI |
 + |--------|:-------:|:----:|:----------:|:----------:|
 + | **Setup complexity** | Medium | Low | Medium | None |
@@ -608,55 +632,55 @@ Lines added: 280, lines removed: 1
 + | **Debugging ease** | Hard | Medium | Medium | Easy |
 + | **Infrastructure** | Server + tunnel | Process | Server | None |
 + | **Best for** | Production | Simple automation | Web apps | Development |
-+ 
++
 + ---
-+ 
++
 + ## Quick Start Examples
-+ 
++
 + ### Option A: Webhook (Production)
 + &#96;&#96;&#96;bash
 + # Terminal 1: Start webhook
 + uv run adws/adw_triggers/trigger_webhook.py
-+ 
++
 + # Terminal 2: Expose to internet
 + ngrok http 8001
-+ 
++
 + # Configure GitHub webhook → your-ngrok-url.ngrok.io/gh-webhook
 + # Then comment on any issue: "adw_sdlc_zte_iso"
 + &#96;&#96;&#96;
-+ 
++
 + ### Option B: Manual (Development)
 + &#96;&#96;&#96;bash
 + # Run full ZTE on issue #42
 + uv run adws/adw_sdlc_zte_iso.py 42
-+ 
++
 + # Or step-by-step:
 + uv run adws/adw_plan_iso.py 42
 + # Note the ADW ID from output, e.g., adw-a1b2c3d4
 + uv run adws/adw_build_iso.py 42 adw-a1b2c3d4
 + uv run adws/adw_test_iso.py 42 adw-a1b2c3d4
 + &#96;&#96;&#96;
-+ 
++
 + ### Option C: AEA Interactive
 + &#96;&#96;&#96;bash
 + # Start AEA server
 + uv run adws/adw_triggers/adw_trigger_aea_server.py
-+ 
++
 + # In another terminal or via curl:
 + curl -X POST http://localhost:8743/aea/new_agent
 + # Returns: {"agent": {"agent_id": "aea_abc123...", ...}}
-+ 
++
 + curl -X POST http://localhost:8743/aea/prompt_agent \
 +   -H "Content-Type: application/json" \
 +   -d '{"agent_id": "aea_abc123...", "prompt": "Help me fix the login bug"}'
 + &#96;&#96;&#96;
-+ 
++
 + ---
-+ 
++
 + ## Environment Requirements
-+ 
++
 + All triggers need these environment variables (typically in &#96;.env&#96;):
-+ 
++
 + &#96;&#96;&#96;bash
 + GITHUB_PAT=ghp_...          # GitHub Personal Access Token
 + ANTHROPIC_API_KEY=sk-...    # For Claude agents
@@ -664,7 +688,7 @@ Lines added: 280, lines removed: 1
 + PORT=8001                   # Webhook server port
 + CLAUDE_CODE_PATH=claude     # Path to Claude Code CLI
 + &#96;&#96;&#96;
-+ 
++
 ```
 
 </details>
@@ -697,6 +721,7 @@ uv run adws/adw_triggers/trigger_webhook.py
 ```
 
 **How it works:**
+
 - Runs FastAPI server on port `8001` (configurable via `PORT` env var)
 - Exposes `/gh-webhook` endpoint for GitHub webhooks
 - Triggers when:
@@ -704,24 +729,27 @@ uv run adws/adw_triggers/trigger_webhook.py
   - **Comment created** with `adw_` in the body
 
 **Example GitHub comment to trigger ZTE:**
+
 ```
 adw_sdlc_zte_iso
 ```
 
 **Workflow selection:** Uses `adw_classifier` agent to parse the text and extract:
+
 - Which workflow to run (e.g., `adw_sdlc_zte_iso`)
 - Optional ADW ID (for continuing existing workflows)
 - Model set (`base`, `pro`, etc.)
 
 **Dependent workflows** (require existing ADW ID):
+
 - `adw_build_iso`, `adw_test_iso`, `adw_review_iso`, `adw_document_iso`, `adw_ship_iso`
 
-| Pros | Cons |
-|------|------|
-| ✅ Fully automated — no manual intervention | ❌ Requires webhook infrastructure (ngrok/server) |
+| Pros                                         | Cons                                                      |
+| -------------------------------------------- | --------------------------------------------------------- |
+| ✅ Fully automated — no manual intervention  | ❌ Requires webhook infrastructure (ngrok/server)         |
 | ✅ Integrates naturally with GitHub workflow | ❌ 10-second GitHub timeout (handled via background jobs) |
-| ✅ Team members can trigger via comments | ❌ Debugging harder — logs in `agents/{adw_id}/` |
-| ✅ Audit trail in GitHub issues | |
+| ✅ Team members can trigger via comments     | ❌ Debugging harder — logs in `agents/{adw_id}/`          |
+| ✅ Audit trail in GitHub issues              |                                                           |
 
 ---
 
@@ -734,17 +762,18 @@ uv run adws/adw_triggers/trigger_cron.py
 ```
 
 **Triggers when:**
+
 - New issue with **no comments** yet
 - Issue where latest comment is exactly `"adw"`
 
 **Always runs:** `adw_plan_build_iso.py` (hardcoded, not configurable)
 
-| Pros | Cons |
-|------|------|
+| Pros                         | Cons                                  |
+| ---------------------------- | ------------------------------------- |
 | ✅ No webhook setup required | ❌ Only triggers `adw_plan_build_iso` |
-| ✅ Works behind firewalls | ❌ 20-second polling delay |
-| ✅ Simple to run | ❌ Less flexible than webhook |
-| | ❌ Consumes GitHub API quota |
+| ✅ Works behind firewalls    | ❌ 20-second polling delay            |
+| ✅ Simple to run             | ❌ Less flexible than webhook         |
+|                              | ❌ Consumes GitHub API quota          |
 
 ---
 
@@ -757,6 +786,7 @@ uv run adws/adw_triggers/adw_trigger_aea_server.py
 ```
 
 **How it works:**
+
 - FastAPI server on port `8743`
 - Creates agent sessions with unique IDs (e.g., `aea_123abc456def`)
 - Stores sessions in SQLite (`adw_data/aea_agents.db`)
@@ -773,29 +803,30 @@ uv run adws/adw_triggers/adw_trigger_aea_server.py
 | `POST /aea/end_agent` | Archive agent session |
 
 **Session Continuity:**
+
 - First prompt creates a new Claude Code session
 - Subsequent prompts use `--resume` with the stored `cc_session_id`
 - Conversation history persists across browser refreshes
 
 #### AEA Server vs Claude Code CLI
 
-| Aspect | AEA Server | Claude Code CLI |
-|--------|------------|-----------------|
-| **Interface** | REST API / Web UI | Terminal |
-| **Session persistence** | SQLite database | File-based (`~/.claude/`) |
-| **Multi-user** | ✅ Yes — concurrent agents | ❌ Single user |
-| **Conversation history** | Stored & queryable | Local only |
-| **Integration** | Embeddable in apps | Standalone tool |
-| **Overhead** | Server process required | None |
-| **Use case** | Web apps, dashboards, team tools | Personal dev work |
+| Aspect                   | AEA Server                       | Claude Code CLI           |
+| ------------------------ | -------------------------------- | ------------------------- |
+| **Interface**            | REST API / Web UI                | Terminal                  |
+| **Session persistence**  | SQLite database                  | File-based (`~/.claude/`) |
+| **Multi-user**           | ✅ Yes — concurrent agents       | ❌ Single user            |
+| **Conversation history** | Stored & queryable               | Local only                |
+| **Integration**          | Embeddable in apps               | Standalone tool           |
+| **Overhead**             | Server process required          | None                      |
+| **Use case**             | Web apps, dashboards, team tools | Personal dev work         |
 
-| Pros | Cons |
-|------|------|
-| ✅ Persistent sessions across refreshes | ❌ Requires running server |
-| ✅ Multiple concurrent agents | ❌ More complex setup |
-| ✅ Web UI integration | ❌ Not for batch SDLC workflows |
-| ✅ Conversation history in DB | ❌ Additional latency vs direct CLI |
-| ✅ Creative agent names 🎨 | |
+| Pros                                    | Cons                                |
+| --------------------------------------- | ----------------------------------- |
+| ✅ Persistent sessions across refreshes | ❌ Requires running server          |
+| ✅ Multiple concurrent agents           | ❌ More complex setup               |
+| ✅ Web UI integration                   | ❌ Not for batch SDLC workflows     |
+| ✅ Conversation history in DB           | ❌ Additional latency vs direct CLI |
+| ✅ Creative agent names 🎨              |                                     |
 
 ---
 
@@ -811,17 +842,20 @@ uv run adws/adw_sdlc_zte_iso.py <issue-number> [adw-id] [--skip-e2e] [--skip-res
 #### Understanding `<issue-number>` and `[adw-id]`
 
 **`<issue-number>`** (required):
+
 - The GitHub issue number that defines the work to be done
 - Example: For `https://github.com/org/repo/issues/42`, use `42`
 - The issue title and body become the spec for the AI agents
 
 **`[adw-id]`** (optional):
+
 - Unique identifier for a workflow run (e.g., `adw-a1b2c3d4`)
 - **If omitted:** A new ADW ID is auto-generated and a fresh workflow starts
 - **If provided:** Continues an existing workflow (uses existing worktree, branch, state)
 - State is stored in `agents/{adw-id}/adw_state.json`
 
 **When to provide ADW ID:**
+
 ```bash
 # Start fresh workflow on issue 42
 uv run adws/adw_plan_iso.py 42
@@ -857,55 +891,56 @@ uv run adws/adw_sdlc_iso.py <issue-number> [adw-id]       # Full SDLC, no auto-s
 uv run adws/adw_sdlc_zte_iso.py <issue-number> [adw-id]   # Full SDLC + auto-ship
 ```
 
-| Pros | Cons |
-|------|------|
-| ✅ Full control over execution | ❌ Manual invocation required |
-| ✅ Easy debugging — see output live | ❌ No GitHub integration |
-| ✅ Can run any workflow | ❌ Must track ADW IDs manually |
-| ✅ No infrastructure needed | |
-| ✅ Best for development | |
+| Pros                                | Cons                           |
+| ----------------------------------- | ------------------------------ |
+| ✅ Full control over execution      | ❌ Manual invocation required  |
+| ✅ Easy debugging — see output live | ❌ No GitHub integration       |
+| ✅ Can run any workflow             | ❌ Must track ADW IDs manually |
+| ✅ No infrastructure needed         |                                |
+| ✅ Best for development             |                                |
 
 ---
 
 ## Available Workflows
 
-| Workflow | Description | Requires ADW ID |
-|----------|-------------|:---------------:|
-| `adw_plan_iso` | Planning phase only | ❌ |
-| `adw_patch_iso` | Quick patch workflow | ❌ |
-| `adw_build_iso` | Implementation phase | ✅ |
-| `adw_test_iso` | Testing phase | ✅ |
-| `adw_review_iso` | Code review phase | ✅ |
-| `adw_document_iso` | Documentation phase | ✅ |
-| `adw_ship_iso` | Approve & merge PR | ✅ |
-| `adw_plan_build_iso` | Plan → Build | ❌ |
-| `adw_plan_build_test_iso` | Plan → Build → Test | ❌ |
-| `adw_plan_build_test_review_iso` | Plan → Build → Test → Review | ❌ |
-| `adw_plan_build_document_iso` | Plan → Build → Document | ❌ |
-| `adw_plan_build_review_iso` | Plan → Build → Review | ❌ |
-| `adw_sdlc_iso` | Full SDLC (no auto-ship) | ❌ |
-| `adw_sdlc_zte_iso` | **Zero Touch Execution** — full SDLC + auto-ship 🚀 | ❌ |
+| Workflow                         | Description                                         | Requires ADW ID |
+| -------------------------------- | --------------------------------------------------- | :-------------: |
+| `adw_plan_iso`                   | Planning phase only                                 |       ❌        |
+| `adw_patch_iso`                  | Quick patch workflow                                |       ❌        |
+| `adw_build_iso`                  | Implementation phase                                |       ✅        |
+| `adw_test_iso`                   | Testing phase                                       |       ✅        |
+| `adw_review_iso`                 | Code review phase                                   |       ✅        |
+| `adw_document_iso`               | Documentation phase                                 |       ✅        |
+| `adw_ship_iso`                   | Approve & merge PR                                  |       ✅        |
+| `adw_plan_build_iso`             | Plan → Build                                        |       ❌        |
+| `adw_plan_build_test_iso`        | Plan → Build → Test                                 |       ❌        |
+| `adw_plan_build_test_review_iso` | Plan → Build → Test → Review                        |       ❌        |
+| `adw_plan_build_document_iso`    | Plan → Build → Document                             |       ❌        |
+| `adw_plan_build_review_iso`      | Plan → Build → Review                               |       ❌        |
+| `adw_sdlc_iso`                   | Full SDLC (no auto-ship)                            |       ❌        |
+| `adw_sdlc_zte_iso`               | **Zero Touch Execution** — full SDLC + auto-ship 🚀 |       ❌        |
 
 ---
 
 ## Comparison Matrix
 
-| Aspect | Webhook | Cron | AEA Server | Manual CLI |
-|--------|:-------:|:----:|:----------:|:----------:|
-| **Setup complexity** | Medium | Low | Medium | None |
-| **Real-time** | ✅ | ❌ | ✅ | ✅ |
-| **GitHub integration** | ✅ | ✅ | ❌ | ❌ |
-| **Workflow flexibility** | ✅ All | ❌ One | ❌ Interactive | ✅ All |
-| **Multi-user** | ✅ | ✅ | ✅ | ❌ |
-| **Debugging ease** | Hard | Medium | Medium | Easy |
-| **Infrastructure** | Server + tunnel | Process | Server | None |
-| **Best for** | Production | Simple automation | Web apps | Development |
+| Aspect                   |     Webhook     |       Cron        |   AEA Server   | Manual CLI  |
+| ------------------------ | :-------------: | :---------------: | :------------: | :---------: |
+| **Setup complexity**     |     Medium      |        Low        |     Medium     |    None     |
+| **Real-time**            |       ✅        |        ❌         |       ✅       |     ✅      |
+| **GitHub integration**   |       ✅        |        ✅         |       ❌       |     ❌      |
+| **Workflow flexibility** |     ✅ All      |      ❌ One       | ❌ Interactive |   ✅ All    |
+| **Multi-user**           |       ✅        |        ✅         |       ✅       |     ❌      |
+| **Debugging ease**       |      Hard       |      Medium       |     Medium     |    Easy     |
+| **Infrastructure**       | Server + tunnel |      Process      |     Server     |    None     |
+| **Best for**             |   Production    | Simple automation |    Web apps    | Development |
 
 ---
 
 ## Quick Start Examples
 
 ### Option A: Webhook (Production)
+
 ```bash
 # Terminal 1: Start webhook
 uv run adws/adw_triggers/trigger_webhook.py
@@ -918,6 +953,7 @@ ngrok http 8001
 ```
 
 ### Option B: Manual (Development)
+
 ```bash
 # Run full ZTE on issue #42
 uv run adws/adw_sdlc_zte_iso.py 42
@@ -930,6 +966,7 @@ uv run adws/adw_test_iso.py 42 adw-a1b2c3d4
 ```
 
 ### Option C: AEA Interactive
+
 ```bash
 # Start AEA server
 uv run adws/adw_triggers/adw_trigger_aea_server.py
@@ -958,4 +995,3 @@ CLAUDE_CODE_PATH=claude     # Path to Claude Code CLI
 ```
 
 ---
-

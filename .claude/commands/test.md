@@ -5,8 +5,9 @@ Execute comprehensive validation tests for both frontend and backend components,
 ## Purpose
 
 Proactively identify and fix issues in the application before they impact users or developers. By running this comprehensive test suite, you can:
+
 - Detect syntax errors, type mismatches, and import failures
-- Identify broken tests or security vulnerabilities  
+- Identify broken tests or security vulnerabilities
 - Verify build processes and dependencies
 - Ensure the application is in a healthy state
 

@@ -39,6 +39,7 @@ The model upgrades are transparent to end users. The Natural Language SQL Interf
 ## Configuration
 
 No additional configuration is required. The system continues to use the same environment variables:
+
 - `OPENAI_API_KEY` - for OpenAI API access
 - `ANTHROPIC_API_KEY` - for Anthropic API access
 

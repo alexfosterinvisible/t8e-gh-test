@@ -14,14 +14,17 @@ class FileUploadResponse(BaseModel):
     sample_data: List[Dict[str, Any]]
     error: Optional[str] = None
 
-# Query Models  
+# Query Models
 class QueryRequest(BaseModel):
     query: str = Field(..., description="Natural language query")
     llm_provider: Literal["openai", "anthropic"] = "openai"
     table_name: Optional[str] = None  # If querying specific table
+    output_mode: Literal["sql", "abap"] = "sql"  # Output mode: SQL or ABAP
 
 class QueryResponse(BaseModel):
-    sql: str
+    sql: str  # Kept for backward compatibility
+    code: Optional[str] = None  # Generic code field for SQL or ABAP
+    output_mode: Optional[str] = None  # Echo back which mode was used
     results: List[Dict[str, Any]]
     columns: List[str]
     row_count: int

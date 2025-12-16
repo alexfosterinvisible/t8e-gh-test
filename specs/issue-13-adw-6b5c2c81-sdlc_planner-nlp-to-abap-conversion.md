@@ -1,23 +1,29 @@
 # Feature: NLP to ABAP SAP Code Conversion
 
 ## Metadata
+
 issue_number: `13`
 adw_id: `6b5c2c81`
 issue_json: `{"number":13,"title":"Feature Request: Add NLP to ABAP SAP conversion button","body":"## Feature Request\n\nAdd a button that enables Natural Language Processing (NLP) to ABAP SAP code generation, as an alternative to the existing SQL generation.\n\n### Use Case\nUsers working with SAP systems need the ability to convert natural language queries directly to ABAP code, similar to how the current NLP -> SQL feature works.\n\n### Proposed Solution\nAdd a toggle or separate button in the UI that switches the output target from SQL to ABAP SAP syntax."}`
 
 ## Feature Description
+
 This feature adds the capability to convert natural language queries into ABAP SAP code, complementing the existing NLP to SQL conversion functionality. Users will be able to toggle between SQL and ABAP output modes, with the backend generating appropriate ABAP syntax using the same LLM providers (OpenAI/Anthropic) that currently power SQL generation. The UI will display ABAP code instead of SQL, with execution disabled (as ABAP requires SAP system connectivity which is out of scope).
 
 ## User Story
+
 As a SAP developer or analyst
 I want to convert natural language queries to ABAP SAP code
 So that I can quickly generate ABAP code snippets for my SAP development work without manually writing the syntax
 
 ## Problem Statement
+
 Currently, the application only supports NLP to SQL conversion. Users working with SAP systems need similar assistance for generating ABAP code but have no built-in tool to convert their natural language requirements into proper ABAP syntax. This creates inefficiency for SAP developers who must manually translate business logic into ABAP code.
 
 ## Solution Statement
+
 Extend the existing NLP architecture to support ABAP code generation by:
+
 1. Adding a UI toggle/button to switch between SQL and ABAP output modes
 2. Implementing ABAP code generation functions in the backend using the existing LLM providers
 3. Updating the query flow to route requests to the appropriate code generator based on the selected mode
@@ -25,6 +31,7 @@ Extend the existing NLP architecture to support ABAP code generation by:
 5. Maintaining backward compatibility with the existing SQL generation functionality
 
 ## Relevant Files
+
 Use these files to implement the feature:
 
 - `app/server/core/llm_processor.py` - Contains the SQL generation logic using OpenAI and Anthropic. Will be extended to add ABAP generation functions following the same pattern as `generate_sql_with_openai` and `generate_sql_with_anthropic`.
@@ -56,18 +63,23 @@ Use these files to implement the feature:
 ## Implementation Plan
 
 ### Phase 1: Foundation
+
 Update backend data models to support output mode selection, allowing the system to distinguish between SQL and ABAP code generation requests. This includes adding a new field to the QueryRequest model and updating the QueryResponse model to handle ABAP code output.
 
 ### Phase 2: Core Implementation
+
 Implement ABAP code generation in the backend by creating new functions in llm_processor.py that mirror the SQL generation logic but produce ABAP code instead. Update the query processing endpoint to route requests to the appropriate generator based on the output mode. Add comprehensive prompts for the LLM to generate proper ABAP syntax following SAP conventions.
 
 ### Phase 3: Integration
+
 Update the frontend to add a UI toggle for switching between SQL and ABAP modes. Modify the query submission flow to include the selected mode and update the results display to show ABAP code with appropriate syntax highlighting. Ensure the toggle state persists across queries and provides clear visual feedback about which mode is active.
 
 ## Step by Step Tasks
+
 IMPORTANT: Execute every step in order, top to bottom.
 
 ### Step 1: Update Backend Data Models
+
 - Read `app/server/core/data_models.py` to understand current QueryRequest and QueryResponse structure
 - Add `output_mode` field to `QueryRequest` model with type `Literal["sql", "abap"]` and default value `"sql"` for backward compatibility
 - Update `QueryResponse` model to change `sql` field to `code` field (or add both for compatibility) to represent either SQL or ABAP code
@@ -75,6 +87,7 @@ IMPORTANT: Execute every step in order, top to bottom.
 - Write unit tests in `app/server/tests/test_data_models.py` (create if doesn't exist) to validate the new fields
 
 ### Step 2: Implement ABAP Code Generation Functions
+
 - Read `app/server/core/llm_processor.py` to understand the SQL generation implementation
 - Create `generate_abap_with_openai(query_text: str, schema_info: Dict[str, Any]) -> str` function that generates ABAP code using OpenAI
   - Use prompts that instruct the LLM to generate ABAP syntax for SAP systems
@@ -97,6 +110,7 @@ IMPORTANT: Execute every step in order, top to bottom.
   - Both OpenAI and Anthropic functions work
 
 ### Step 3: Update Query Processing Endpoint
+
 - Read `app/server/server.py` to understand the current `/api/query` endpoint implementation
 - Update `process_natural_language_query` function to:
   - Accept the new `output_mode` field from the QueryRequest
@@ -109,6 +123,7 @@ IMPORTANT: Execute every step in order, top to bottom.
 - Update existing tests in `app/server/tests/test_server.py` (create if doesn't exist) to cover both SQL and ABAP modes
 
 ### Step 4: Add Frontend UI Toggle
+
 - Read `app/client/index.html` to understand the current layout structure
 - Add a toggle button group in the query section (before or after the query input):
   ```html
@@ -126,6 +141,7 @@ IMPORTANT: Execute every step in order, top to bottom.
   - Make it responsive for mobile devices
 
 ### Step 5: Update Frontend Query Logic
+
 - Read `app/client/src/main.ts` to understand the current query execution flow
 - Add global state variable to track the selected output mode (default: "sql")
 - In `initializeQueryInput()` function:
@@ -145,6 +161,7 @@ IMPORTANT: Execute every step in order, top to bottom.
   - Pass the output mode parameter in the request body
 
 ### Step 6: Create E2E Test for ABAP Conversion
+
 - Read `.claude/commands/test_e2e.md` to understand how E2E tests are structured and executed
 - Read `.claude/commands/e2e/test_basic_query.md` to see an example E2E test format
 - Create `.claude/commands/e2e/test_abap_conversion.md` with the following test steps:
@@ -172,6 +189,7 @@ IMPORTANT: Execute every step in order, top to bottom.
   - 6+ screenshots captured
 
 ### Step 7: Update Documentation
+
 - Read `README.md` to understand the current documentation structure
 - Update the "Features" section to add a bullet point about ABAP code generation:
   - "🔧 ABAP SAP code generation for SAP system development"
@@ -185,6 +203,7 @@ IMPORTANT: Execute every step in order, top to bottom.
   - ABAP mode: Generates ABAP code for SAP systems (informational only, no execution)
 
 ### Step 8: Run Validation Commands
+
 - Execute all validation commands listed in the "Validation Commands" section below
 - Verify all tests pass
 - Verify both frontend and backend build without errors
@@ -194,6 +213,7 @@ IMPORTANT: Execute every step in order, top to bottom.
 ## Testing Strategy
 
 ### Unit Tests
+
 - **ABAP Generation Unit Tests** (`app/server/tests/test_abap_generation.py`):
   - Test `generate_abap_with_openai()` generates valid ABAP code for simple queries
   - Test `generate_abap_with_openai()` generates valid ABAP code for complex queries
@@ -217,6 +237,7 @@ IMPORTANT: Execute every step in order, top to bottom.
   - Test backward compatibility: queries without output mode default to SQL
 
 ### Edge Cases
+
 - User toggles between SQL and ABAP modes multiple times - verify state is maintained
 - User submits query in ABAP mode with no tables uploaded - verify appropriate error message
 - LLM generates ABAP code with markdown formatting - verify it's cleaned up properly
@@ -228,6 +249,7 @@ IMPORTANT: Execute every step in order, top to bottom.
 - Browser back/forward navigation - verify mode toggle state is preserved (or resets to default)
 
 ## Acceptance Criteria
+
 - [ ] Backend accepts `output_mode` parameter in query requests with values "sql" or "abap"
 - [ ] Backend generates ABAP code when output mode is "abap" using OpenAI or Anthropic
 - [ ] Backend continues to generate and execute SQL when output mode is "sql" (backward compatibility)
@@ -246,6 +268,7 @@ IMPORTANT: Execute every step in order, top to bottom.
 - [ ] Error messages are clear and helpful when ABAP generation fails
 
 ## Validation Commands
+
 Execute every command to validate the feature works correctly with zero regressions.
 
 - Read `.claude/commands/test_e2e.md`, then read and execute your new `.claude/commands/e2e/test_abap_conversion.md` E2E test file to validate the ABAP conversion functionality works end-to-end
@@ -257,10 +280,12 @@ Execute every command to validate the feature works correctly with zero regressi
 ## Notes
 
 ### ABAP Code Generation Prompt Guidance
+
 When implementing the ABAP generation functions, use prompts that guide the LLM to generate production-quality ABAP code following SAP conventions:
+
 - Use proper ABAP syntax: SELECT, DATA, LOOP AT, etc.
 - Declare internal tables with TYPE TABLE OF
-- Use proper variable naming conventions (lv_ for local variables, lt_ for local tables, etc.)
+- Use proper variable naming conventions (lv* for local variables, lt* for local tables, etc.)
 - Include appropriate error handling with MESSAGE statements
 - Format code with proper indentation
 - Add comments for complex logic
@@ -268,12 +293,15 @@ When implementing the ABAP generation functions, use prompts that guide the LLM 
 - Return only the ABAP code without explanations or markdown
 
 ### Schema Translation for ABAP
+
 The schema information will need to be translated from SQLite concepts to SAP table concepts:
+
 - SQLite table names can be treated as custom Z tables (e.g., "users" -> "ZUSERS")
 - Column types should be mapped to ABAP data types (TEXT -> CHAR, INTEGER -> INT4, etc.)
 - Row count can be used to suggest performance considerations in the generated ABAP
 
 ### Future Considerations
+
 - **ABAP Execution**: In the future, this feature could be extended to connect to an SAP system via RFC and execute the generated ABAP code remotely. This would require SAP credentials, RFC connection configuration, and proper error handling for SAP-specific exceptions.
 - **ABAP Syntax Validation**: Consider adding client-side or server-side ABAP syntax validation to catch basic errors before displaying to the user.
 - **ABAP Templates**: Create a library of common ABAP patterns (data retrieval, ALV reports, BAPIs) that can be used as templates for generation.
@@ -282,7 +310,9 @@ The schema information will need to be translated from SQLite concepts to SAP ta
 - **ABAP Syntax Highlighting**: Implement proper syntax highlighting for ABAP code in the frontend using a library like Prism.js or Monaco Editor.
 
 ### No New Dependencies Required
+
 This feature can be implemented using existing dependencies:
+
 - Backend: Uses existing OpenAI and Anthropic client libraries
 - Frontend: Uses existing TypeScript and vanilla JavaScript (no new UI libraries needed)
 - Testing: Uses existing pytest and Playwright frameworks

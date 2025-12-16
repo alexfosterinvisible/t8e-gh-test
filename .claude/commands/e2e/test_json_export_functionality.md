@@ -27,7 +27,7 @@ So that I can easily integrate the data with modern applications, APIs, or data 
 8. Take a screenshot of the table with both export buttons
 
 9. Click the "JSON" button for the table
-10. **Verify** a JSON file is downloaded with the name "{table_name}_export.json"
+10. **Verify** a JSON file is downloaded with the name "{table_name}\_export.json"
 11. **Verify** the downloaded file contains valid JSON with:
     - An array of objects
     - Each object representing a row
@@ -35,7 +35,7 @@ So that I can easily integrate the data with modern applications, APIs, or data 
     - Null values properly represented
     - Pretty-printed format with indentation
 
-12. Enter a query: "SELECT * FROM uploaded_table LIMIT 5"
+12. Enter a query: "SELECT \* FROM uploaded_table LIMIT 5"
 13. Click the Query button
 14. **Verify** the query results appear
 15. **Verify** two export buttons appear to the left of the 'Hide' button:
@@ -55,7 +55,7 @@ So that I can easily integrate the data with modern applications, APIs, or data 
 21. Click the "JSON" button for the results
 22. **Verify** the JSON file properly escapes special characters
 
-23. Execute an empty result query: "SELECT * FROM uploaded_table WHERE 1=0"
+23. Execute an empty result query: "SELECT \* FROM uploaded_table WHERE 1=0"
 24. **Verify** the "JSON" button is still present
 25. Click the "JSON" button
 26. **Verify** an empty JSON array "[]" is downloaded
@@ -67,11 +67,12 @@ So that I can easily integrate the data with modern applications, APIs, or data 
 30. Take a screenshot of the final state
 
 ## Success Criteria
+
 - JSON export buttons appear in correct positions (alongside CSV buttons)
 - JSON buttons are visually distinct from CSV buttons (text "JSON" vs icon)
 - Table JSON export downloads complete table as valid JSON
 - Query JSON export downloads current results as valid JSON
-- JSON files have appropriate names ({table_name}_export.json, query_results.json)
+- JSON files have appropriate names ({table_name}\_export.json, query_results.json)
 - JSON format is properly structured and pretty-printed
 - Data types are preserved (numbers, strings, booleans, nulls)
 - Special characters and Unicode are handled correctly
