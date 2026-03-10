@@ -129,3 +129,8 @@ Broader impact or future considerations.
 7. Commit with message: "docs: Add learning L00X - short description"
 
 ```
+
+
+## Diagram Fidelity
+
+- ASCII diagrams must always be included verbatim exactly as originally written when included in the full `.md`.
